@@ -29,30 +29,11 @@ src/main/kotlin/com/jfb/jottasburguer
 │   ├── AppConfig.kt
 │   └── SecurityConfig.kt (opcional, se você adicionar Spring Security)
 ├── controller
-│   ├── HamburguerController.kt
-│   ├── PedidoController.kt
-│   └── ClienteController.kt
 ├── service
-│   ├── HamburguerService.kt
-│   ├── PedidoService.kt
-│   └── ClienteService.kt
 ├── repository
-│   ├── HamburguerRepository.kt
-│   ├── PedidoRepository.kt
-│   └── ClienteRepository.kt
 ├── model
 │   ├── entity
-│   │   ├── Hamburguer.kt
-│   │   ├── Pedido.kt
-│   │   ├── Cliente.kt
-│   │   └── Ingrediente.kt
 │   ├── dto
-│   │   ├── HamburguerRequest.kt
-│   │   ├── HamburguerResponse.kt
-│   │   ├── PedidoRequest.kt
-│   │   ├── PedidoResponse.kt
-│   │   ├── ClienteRequest.kt
-│   │   └── ClienteResponse.kt
 │   └── exception
 │       ├── ErrorResponse.kt
 │       └── GlobalExceptionHandler.kt
@@ -60,3 +41,5 @@ src/main/kotlin/com/jfb/jottasburguer
 │   └── V1__Create_Tables.sql
 └── JottasBurguerApplication.kt
 ```
+
+http://localhost:8080/swagger-ui.html
