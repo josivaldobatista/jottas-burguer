@@ -19,7 +19,13 @@ class SecurityConfig {
         http
             .csrf { it.disable() } // Desabilita CSRF para APIs stateless
             .authorizeHttpRequests {
-                it.requestMatchers("/api/auth/**").permitAll() // Permite acesso público ao endpoint de autenticação
+                it.requestMatchers(
+                    "/swagger-ui.html", // Libera o Swagger UI
+                    "/swagger-ui/**",   // Libera os recursos do Swagger UI
+                    "/v3/api-docs",     // Libera o endpoint da documentação OpenAPI
+                    "/v3/api-docs/**"   // Libera outros recursos da documentação OpenAPI
+                ).permitAll() // Permite acesso público ao Swagger
+                    .requestMatchers("/api/auth/**").permitAll() // Permite acesso público ao endpoint de autenticação
                     .requestMatchers("/api/users").permitAll() // Permite acesso público ao endpoint de cadastro de usuários
                     .anyRequest().authenticated() // Exige autenticação para outros endpoints
             }

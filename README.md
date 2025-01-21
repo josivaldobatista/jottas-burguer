@@ -42,4 +42,32 @@ src/main/kotlin/com/jfb/jottasburguer
 └── JottasBurguerApplication.kt
 ```
 
-http://localhost:8080/swagger-ui.html
+
+---
+
+## **Como Executar o Projeto**
+
+### **Pré-requisitos**
+
+- **Java 21**
+- **Maven**
+- **Docker** (opcional, para rodar o PostgreSQL em um contêiner)
+- **PostgreSQL** (se não estiver usando Docker)
+
+### **Passos para Execução**
+
+1. **Clone o repositório**:
+   ```bash
+   git clone https://github.com/seu-usuario/jottas-burguer.git
+   cd jottas-burguer
+
+Se estiver usando Docker, inicie o contêiner do PostgreSQL:
+
+bash
+Copy
+docker-compose up -d
+
+### **Acesse a API**
+A API estará disponível em http://localhost:8080.
+
+Acesse a documentação da API (Swagger UI) em: http://localhost:8080/swagger-ui.html
