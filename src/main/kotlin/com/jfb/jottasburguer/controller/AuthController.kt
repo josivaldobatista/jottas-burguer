@@ -1,14 +1,18 @@
 package com.jfb.jottasburguer.controller
 
+import com.jfb.jottasburguer.exception.AuthenticationFailedException
 import com.jfb.jottasburguer.model.dto.LoginRequest
 import com.jfb.jottasburguer.model.dto.TokenResponse
 import com.jfb.jottasburguer.security.JwtService
 import com.jfb.jottasburguer.service.AuthUserService
+import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -27,27 +31,37 @@ class AuthController(
     @PostMapping("/login")
     fun login(@RequestBody request: LoginRequest): ResponseEntity<TokenResponse> {
         logger.info("Tentativa de login com email: ${request.email}")
-        logger.info("Senha fornecida: ${request.password}") // Log da senha fornecida
+        logger.info("Senha fornecida: ${request.password}")
 
         try {
+            // Verifica se o usuário existe
+            val user = authUserService.loadUserByUsername(request.email)
+            if (user == null) {
+                throw AuthenticationFailedException("Usuário não encontrado")
+            }
+
+            // Tenta autenticar o usuário
             val authentication = authenticationManager.authenticate(
                 UsernamePasswordAuthenticationToken(request.email, request.password)
             )
             logger.info("Autenticação bem-sucedida para o usuário: ${request.email}")
 
-            val userDetails = authentication.principal as UserDetails
-            logger.info("UserDetails carregado: ${userDetails.username}, roles: ${userDetails.authorities}")
-
-            val token = jwtService.generateToken(userDetails)
-            val refreshToken = jwtService.generateRefreshToken(userDetails)
+            val token = jwtService.generateToken(user)
+            val refreshToken = jwtService.generateRefreshToken(user)
 
             logger.info("Token gerado: $token")
             logger.info("Refresh token gerado: $refreshToken")
 
             return ResponseEntity.ok(TokenResponse(token, refreshToken))
+        } catch (ex: UsernameNotFoundException) {
+            logger.error("Usuário não encontrado: ${ex.message}")
+            throw AuthenticationFailedException("Usuário não encontrado")
+        } catch (ex: BadCredentialsException) {
+            logger.error("Senha incorreta: ${ex.message}")
+            throw AuthenticationFailedException("Senha incorreta")
         } catch (ex: Exception) {
             logger.error("Falha na autenticação: ${ex.message}")
-            throw RuntimeException("Falha na autenticação: ${ex.message}")
+            throw AuthenticationFailedException("Falha na autenticação: ${ex.message}")
         }
     }
 
