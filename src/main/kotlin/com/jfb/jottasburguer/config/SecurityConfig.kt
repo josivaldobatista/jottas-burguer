@@ -1,44 +1,55 @@
 package com.jfb.jottasburguer.config
 
+import com.jfb.jottasburguer.security.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.slf4j.LoggerFactory
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig {
+class SecurityConfig(
+    private val jwtAuthenticationFilter: JwtAuthenticationFilter
+) {
+
+    private val logger = LoggerFactory.getLogger(SecurityConfig::class.java)
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        logger.info("Configurando SecurityFilterChain")
         http
-            .csrf { it.disable() } // Desabilita CSRF para APIs stateless
-            .authorizeHttpRequests {
-                it.requestMatchers(
-                    "/swagger-ui.html", // Libera o Swagger UI
-                    "/swagger-ui/**",   // Libera os recursos do Swagger UI
-                    "/v3/api-docs",     // Libera o endpoint da documentação OpenAPI
-                    "/v3/api-docs/**"   // Libera outros recursos da documentação OpenAPI
-                ).permitAll() // Permite acesso público ao Swagger
-                    .requestMatchers("/api/auth/**").permitAll() // Permite acesso público ao endpoint de autenticação
-                    .requestMatchers("/api/users").permitAll() // Permite acesso público ao endpoint de cadastro de usuários
-                    .anyRequest().authenticated() // Exige autenticação para outros endpoints
+            .csrf { it.disable() }
+            .sessionManagement {
+                it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
+            .authorizeHttpRequests {
+                it
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/users").permitAll()
+                    .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                    .anyRequest().authenticated()
+            }
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()
     }
 
     @Bean
     fun passwordEncoder(): PasswordEncoder {
+        logger.info("Configurando BCryptPasswordEncoder")
         return BCryptPasswordEncoder()
     }
 
     @Bean
     fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
+        logger.info("Configurando AuthenticationManager")
         return authenticationConfiguration.authenticationManager
     }
 }

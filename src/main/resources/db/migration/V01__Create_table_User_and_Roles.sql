@@ -8,17 +8,18 @@ CREATE TABLE users (
 -- Cria a tabela user_roles
 CREATE TABLE user_roles (
     user_id BIGINT NOT NULL,
-    roles VARCHAR(50) NOT NULL, -- Coluna renomeada para "roles"
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    role VARCHAR(50) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    UNIQUE (user_id, role)
 );
 
 -- Adiciona o usuário admin
 INSERT INTO users (email, hashed_password)
-VALUES ('admin@jottasburguer.com', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQubh4a'); -- Senha: "admin" criptografada
+VALUES ('admin@jottasburguer.com', '$2a$10$lhbW9qrnJgUOFhRZuyBbc.odwbzdrlw.cnQ8QESrHu5bzVlZjYO2e'); -- Senha: "senha123" criptografada
 
 -- Adiciona a role ADMIN para o usuário admin
-INSERT INTO user_roles (user_id, roles)
+INSERT INTO user_roles (user_id, role)
 VALUES (
-    (SELECT id FROM users WHERE email = 'admin@jottasburguer.com'), -- Obtém o ID do usuário admin
+    (SELECT id FROM users WHERE email = 'admin@jottasburguer.com'),
     'ADMIN'
 );
