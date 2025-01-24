@@ -1,9 +1,11 @@
 package com.jfb.jottasburguer.service.impl
 
+import com.jfb.jottasburguer.exception.FoodTypeNotFoundException
 import com.jfb.jottasburguer.exception.ProductNotFoundException
 import com.jfb.jottasburguer.model.dto.ProductRequest
 import com.jfb.jottasburguer.model.dto.ProductResponse
 import com.jfb.jottasburguer.model.entity.Product
+import com.jfb.jottasburguer.repository.FoodTypeRepository
 import com.jfb.jottasburguer.repository.ProductRepository
 import com.jfb.jottasburguer.service.ProductService
 import org.springframework.stereotype.Service
@@ -11,21 +13,28 @@ import org.slf4j.LoggerFactory
 
 @Service
 class ProductServiceImpl(
-    private val productRepository: ProductRepository
+    private val productRepository: ProductRepository,
+    private val foodTypeRepository: FoodTypeRepository
 ) : ProductService {
 
     private val logger = LoggerFactory.getLogger(ProductServiceImpl::class.java)
 
     override fun createProduct(request: ProductRequest): ProductResponse {
         logger.info("Creating product with name: ${request.name}")
+
+        // Busca o FoodType pelo ID
+        val foodType = foodTypeRepository.findById(request.foodTypeId)
+            .orElseThrow { FoodTypeNotFoundException("Food type not found with ID: ${request.foodTypeId}") }
+
         val product = Product(
             name = request.name,
-            ingredients = request.ingredients, // Novo campo
+            ingredients = request.ingredients,
             description = request.description,
             price = request.price,
-            imageUrl = request.imageUrl, // Pode ser nulo
-            foodTypeId = request.foodTypeId // Novo campo
+            imageUrl = request.imageUrl,
+            foodType = foodType // Associa o FoodType ao Product
         )
+
         val savedProduct = productRepository.save(product)
         logger.info("Product created successfully: ${savedProduct.name}")
         return mapToProductResponse(savedProduct)
@@ -45,15 +54,22 @@ class ProductServiceImpl(
 
     override fun updateProduct(id: Long, request: ProductRequest): ProductResponse {
         logger.info("Updating product with ID: $id")
+
+        // Busca o produto existente
         val product = productRepository.findById(id)
             .orElseThrow { ProductNotFoundException("Product not found with ID: $id") }
 
+        // Busca o novo FoodType pelo ID
+        val foodType = foodTypeRepository.findById(request.foodTypeId)
+            .orElseThrow { FoodTypeNotFoundException("Food type not found with ID: ${request.foodTypeId}") }
+
+        // Atualiza os campos do produto
         product.name = request.name
-        product.ingredients = request.ingredients // Atualizando ingredients
+        product.ingredients = request.ingredients
         product.description = request.description
         product.price = request.price
-        product.imageUrl = request.imageUrl // Atualizando imageUrl
-        product.foodTypeId = request.foodTypeId // Atualizando foodTypeId
+        product.imageUrl = request.imageUrl
+        product.foodType = foodType // Atualiza o FoodType
 
         val updatedProduct = productRepository.save(product)
         logger.info("Product updated successfully: ${updatedProduct.name}")
@@ -62,9 +78,11 @@ class ProductServiceImpl(
 
     override fun deleteProduct(id: Long) {
         logger.info("Deleting product with ID: $id")
+
         if (!productRepository.existsById(id)) {
             throw ProductNotFoundException("Product not found with ID: $id")
         }
+
         productRepository.deleteById(id)
         logger.info("Product deleted successfully: $id")
     }
@@ -73,11 +91,11 @@ class ProductServiceImpl(
         return ProductResponse(
             id = product.id!!,
             name = product.name,
-            ingredients = product.ingredients, // Mapeando ingredients
+            ingredients = product.ingredients,
             description = product.description,
             price = product.price,
-            imageUrl = product.imageUrl, // Mapeando imageUrl
-            foodTypeId = product.foodTypeId // Mapeando foodTypeId
+            imageUrl = product.imageUrl,
+            foodTypeId = product.foodType.id!! // Retorna o ID do FoodType
         )
     }
 }

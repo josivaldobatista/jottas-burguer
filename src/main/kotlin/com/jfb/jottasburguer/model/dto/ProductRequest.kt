@@ -9,7 +9,7 @@ data class ProductRequest(
     val name: String,
 
     @field:NotBlank(message = "Ingredients are required")
-    val ingredients: String, // Novo campo
+    val ingredients: String,
 
     @field:NotBlank(message = "Description is required")
     val description: String,
@@ -18,8 +18,8 @@ data class ProductRequest(
     @field:Positive(message = "Price must be positive")
     val price: Double,
 
-    val imageUrl: String? = null, // Pode ser nulo
+    val imageUrl: String? = null,
 
     @field:NotNull(message = "Food type ID is required")
-    val foodTypeId: Long // Novo campo
+    val foodTypeId: Long // Agora é um ID que referencia FoodType
 )

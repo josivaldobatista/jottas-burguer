@@ -12,7 +12,7 @@ data class Product(
     var name: String,
 
     @Column(nullable = false)
-    var ingredients: String, // Novo campo
+    var ingredients: String,
 
     @Column(nullable = false)
     var description: String,
@@ -20,9 +20,10 @@ data class Product(
     @Column(nullable = false)
     var price: Double,
 
-    @Column(nullable = true) // Pode ser nulo
+    @Column(nullable = true)
     var imageUrl: String? = null,
 
-    @Column(name = "food_type_id", nullable = false) // Novo campo
-    var foodTypeId: Long
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "food_type_id", nullable = false)
+    var foodType: FoodType // Relacionamento com FoodType
 )
