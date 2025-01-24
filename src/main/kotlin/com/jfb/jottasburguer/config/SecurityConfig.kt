@@ -34,6 +34,7 @@ class SecurityConfig(
                 requests
                     .requestMatchers("/api/auth/**").permitAll() // Endpoints públicos
                     .requestMatchers("/api/users").hasRole("ADMIN") // Somente ADMIN pode criar usuários
+                    .requestMatchers("/api/products/**").authenticated() // Endpoints de produtos exigem autenticação
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Swagger
                     .anyRequest().authenticated() // Todos os outros endpoints exigem autenticação
             }
