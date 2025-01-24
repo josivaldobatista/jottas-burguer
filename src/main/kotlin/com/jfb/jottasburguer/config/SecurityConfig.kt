@@ -32,7 +32,9 @@ class SecurityConfig(
             }
             .authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers("/api/auth/**").permitAll() // Endpoints públicos
+                    .requestMatchers("/api/auth/**").permitAll() // Endpoints públicos (login, registro, etc.)
+                    .requestMatchers("/api/customers").permitAll() // Cadastro de clientes é público
+                    .requestMatchers("/api/orders").permitAll() // Endpoint de pedidos é público (por enquanto)
                     .requestMatchers("/api/users").hasRole("ADMIN") // Somente ADMIN pode criar usuários
                     .requestMatchers("/api/products/**").authenticated() // Endpoints de produtos exigem autenticação
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Swagger
