@@ -4,12 +4,12 @@ import com.jfb.jottasburguer.service.UserDetailsService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import org.slf4j.LoggerFactory
 
 @Component
 class JwtAuthenticationFilter(
@@ -17,7 +17,11 @@ class JwtAuthenticationFilter(
     private val authUserService: UserDetailsService
 ) : OncePerRequestFilter() {
 
-    private val logger = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
+    companion object {
+        private const val BEARER_PREFIX = "Bearer "
+        private val PUBLIC_ENDPOINTS = listOf("/api/auth/login", "/api/auth/refresh-token")
+        private val logger = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
+    }
 
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -25,22 +29,42 @@ class JwtAuthenticationFilter(
         filterChain: FilterChain
     ) {
         val path = request.servletPath
-        if (path.startsWith("/api/auth/login") || path.startsWith("/api/auth/refresh-token")) {
+
+        // Ignora endpoints públicos
+        if (PUBLIC_ENDPOINTS.any { path.startsWith(it) }) {
             filterChain.doFilter(request, response)
             return
         }
 
-        val authHeader = request.getHeader("Authorization")
-        logger.info("Authorization header: $authHeader")
+        try {
+            val authHeader = request.getHeader("Authorization")
+            logger.info("Authorization header recebido para o endpoint: $path")
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            val token = authHeader.substring(7)
-            logger.info("Token JWT recebido: $token")
+            if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+                val token = authHeader.substring(BEARER_PREFIX.length)
+                logger.info("Token JWT recebido para o endpoint: $path")
 
+                if (token.isNotBlank()) {
+                    authenticateUserFromToken(token, request)
+                } else {
+                    logger.warn("Token JWT está vazio ou nulo para o endpoint: $path")
+                }
+            } else {
+                logger.warn("Authorization header não encontrado ou inválido para o endpoint: $path")
+            }
+        } catch (ex: Exception) {
+            logger.error("Erro inesperado durante a autenticação JWT para o endpoint: $path", ex)
+        }
+
+        filterChain.doFilter(request, response)
+    }
+
+    private fun authenticateUserFromToken(token: String, request: HttpServletRequest) {
+        try {
             val username = jwtService.extractUsername(token)
             logger.info("Username extraído do token: $username")
 
-            if (username != null && SecurityContextHolder.getContext().authentication == null) {
+            if (SecurityContextHolder.getContext().authentication == null) {
                 logger.info("Tentando carregar UserDetails para o username: $username")
                 val userDetails = authUserService.loadUserByUsername(username)
 
@@ -55,10 +79,8 @@ class JwtAuthenticationFilter(
                     logger.error("Token inválido para o usuário: ${userDetails.username}")
                 }
             }
-        } else {
-            logger.warn("Authorization header não encontrado ou inválido")
+        } catch (ex: Exception) {
+            logger.error("Erro ao autenticar usuário a partir do token JWT", ex)
         }
-
-        filterChain.doFilter(request, response)
     }
 }

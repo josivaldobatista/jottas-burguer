@@ -1,6 +1,5 @@
 package com.jfb.jottasburguer.exception
 
-import com.jfb.jottasburguer.controller.AuthController
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -21,6 +20,7 @@ class ResourceExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<StandardError> {
         val status = HttpStatus.NOT_FOUND
+        logger.error("Recurso não encontrado: ${e.message}", e) // Log do stack trace
         val err = StandardError(
             timestamp = Instant.now(),
             status = status.value(),
@@ -37,6 +37,7 @@ class ResourceExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<StandardError> {
         val status = HttpStatus.CONFLICT
+        logger.error("Conflito de dados: ${e.message}", e) // Log do stack trace
         val err = StandardError(
             timestamp = Instant.now(),
             status = status.value(),
@@ -53,6 +54,7 @@ class ResourceExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<StandardError> {
         val status = HttpStatus.INTERNAL_SERVER_ERROR
+        logger.error("Erro no banco de dados: ${e.message}", e) // Log do stack trace
         val err = StandardError(
             timestamp = Instant.now(),
             status = status.value(),
@@ -69,6 +71,7 @@ class ResourceExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<ValidationError> {
         val status = HttpStatus.UNPROCESSABLE_ENTITY
+        logger.error("Erro de validação: ${e.message}", e) // Log do stack trace
         val err = ValidationError(
             timestamp = Instant.now(),
             status = status.value(),
@@ -90,6 +93,7 @@ class ResourceExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<StandardError> {
         val status = HttpStatus.UNAUTHORIZED
+        logger.error("Falha na autenticação: ${e.message}", e) // Log do stack trace
         val err = StandardError(
             timestamp = Instant.now(),
             status = status.value(),
@@ -107,8 +111,8 @@ class ResourceExceptionHandler {
     ): ResponseEntity<StandardError> {
         val status = HttpStatus.INTERNAL_SERVER_ERROR
 
-        // Log da exceção completa
-        logger.error("Erro inesperado: ${e.message}", e)
+        // Log da exceção completa com stack trace
+        logger.error("Erro inesperado ao processar a requisição ${request.requestURI}: ${e.message}", e)
 
         val err = StandardError(
             timestamp = Instant.now(),
