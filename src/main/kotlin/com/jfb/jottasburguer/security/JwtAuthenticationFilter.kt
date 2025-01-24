@@ -1,6 +1,6 @@
 package com.jfb.jottasburguer.security
 
-import com.jfb.jottasburguer.service.AuthUserService
+import com.jfb.jottasburguer.service.UserDetailsService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
 @Component
 class JwtAuthenticationFilter(
     private val jwtService: JwtService,
-    private val authUserService: AuthUserService
+    private val authUserService: UserDetailsService
 ) : OncePerRequestFilter() {
 
     private val logger = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)

@@ -1,7 +1,7 @@
 package com.jfb.jottasburguer.service.impl
 
 import com.jfb.jottasburguer.repository.UserRepository
-import com.jfb.jottasburguer.service.AuthUserService
+import com.jfb.jottasburguer.service.UserDetailsService
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UsernameNotFoundException
@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service
 import org.slf4j.LoggerFactory
 
 @Service
-class AuthUserServiceImpl(
+class UserDetailsServiceImpl(
     private val userRepository: UserRepository
-) : AuthUserService {
+) : UserDetailsService {
 
-    private val logger = LoggerFactory.getLogger(AuthUserServiceImpl::class.java)
+    private val logger = LoggerFactory.getLogger(UserDetailsServiceImpl::class.java)
 
     override fun loadUserByUsername(email: String): UserDetails {
         logger.info("Tentando carregar usuário pelo email: $email")
