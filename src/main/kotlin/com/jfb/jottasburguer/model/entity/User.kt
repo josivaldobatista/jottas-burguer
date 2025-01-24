@@ -24,7 +24,7 @@ data class User(
 ) : UserDetails {
 
     override fun getAuthorities(): Collection<GrantedAuthority> {
-        return roles.map { SimpleGrantedAuthority(it) }
+        return roles.map { SimpleGrantedAuthority("ROLE_$it") } // Adiciona o prefixo ROLE_
     }
 
     override fun getPassword(): String = hashedPassword // Retorna a propriedade password

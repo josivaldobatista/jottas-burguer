@@ -70,6 +70,7 @@ class JwtAuthenticationFilter(
 
                 if (jwtService.isTokenValid(token, userDetails)) {
                     logger.info("Token válido para o usuário: ${userDetails.username}")
+                    logger.info("Authorities do usuário: ${userDetails.authorities}") // Log das roles
                     val authToken = UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.authorities
                     )

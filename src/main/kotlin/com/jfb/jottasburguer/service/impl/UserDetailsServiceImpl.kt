@@ -37,10 +37,12 @@ class UserDetailsServiceImpl(
     }
 
     private fun buildUserDetails(user: com.jfb.jottasburguer.model.entity.User): UserDetails {
-        return User
+        var user = User
             .withUsername(user.email)
             .password(user.hashedPassword)
             .authorities(user.authorities)
             .build()
+        logger.info("USER DETAILS: $user")
+        return user
     }
 }

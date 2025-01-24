@@ -32,10 +32,10 @@ class SecurityConfig(
             }
             .authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/api/users").permitAll()
-                    .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                    .anyRequest().authenticated()
+                    .requestMatchers("/api/auth/**").permitAll() // Endpoints públicos
+                    .requestMatchers("/api/users").hasRole("ADMIN") // Somente ADMIN pode criar usuários
+                    .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Swagger
+                    .anyRequest().authenticated() // Todos os outros endpoints exigem autenticação
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()
