@@ -24,6 +24,12 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
+        val path = request.servletPath
+        if (path.startsWith("/api/auth/login") || path.startsWith("/api/auth/refresh-token")) {
+            filterChain.doFilter(request, response)
+            return
+        }
+
         val authHeader = request.getHeader("Authorization")
         logger.info("Authorization header: $authHeader")
 

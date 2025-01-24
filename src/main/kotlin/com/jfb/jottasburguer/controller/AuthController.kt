@@ -2,7 +2,7 @@ package com.jfb.jottasburguer.controller
 
 import com.jfb.jottasburguer.model.dto.LoginRequest
 import com.jfb.jottasburguer.model.dto.TokenResponse
-import com.jfb.jottasburguer.service.AuthService
+import com.jfb.jottasburguer.service.AuthServiceImpl
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/auth")
 class AuthController(
-    private val authService: AuthService
+    private val authService: AuthServiceImpl
 ) {
 
     private val logger = LoggerFactory.getLogger(AuthController::class.java)
@@ -22,6 +22,7 @@ class AuthController(
     fun login(@RequestBody request: LoginRequest): ResponseEntity<TokenResponse> {
         logger.info("Tentativa de login com email: ${request.email}")
         val tokenResponse = authService.login(request)
+        logger.info("Token gerado com sucesso para o usuário: ${request.email}")
         return ResponseEntity.ok(tokenResponse)
     }
 
