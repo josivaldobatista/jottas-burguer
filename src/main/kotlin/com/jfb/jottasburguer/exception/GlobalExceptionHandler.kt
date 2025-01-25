@@ -1,6 +1,7 @@
 package com.jfb.jottasburguer.exception
 
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.ConstraintViolationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -78,6 +79,33 @@ class ResourceExceptionHandler {
             message = e.message ?: "O email fornecido já está em uso.",
             path = request.requestURI
         )
+        return ResponseEntity.status(status).body(err)
+    }
+
+    @ExceptionHandler(ConstraintViolationException::class)
+    fun handleConstraintViolationException(
+        e: ConstraintViolationException,
+        request: HttpServletRequest
+    ): ResponseEntity<ValidationError> {
+        val status = HttpStatus.BAD_REQUEST // 400 Bad Request
+        logger.error("Erro de validação: ${e.message}")
+
+        // Cria o objeto de erro de validação
+        val err = ValidationError(
+            timestamp = Instant.now(),
+            status = status.value(),
+            error = "Erro de validação",
+            message = "Um ou mais campos estão inválidos. Corrija e tente novamente.",
+            path = request.requestURI
+        )
+
+        // Adiciona os erros de campo ao objeto de erro
+        for (violation in e.constraintViolations) {
+            val fieldName = violation.propertyPath.toString()
+            val errorMessage = violation.message
+            err.addError(fieldName, errorMessage)
+        }
+
         return ResponseEntity.status(status).body(err)
     }
 
