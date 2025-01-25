@@ -1,8 +1,10 @@
 package com.jfb.jottasburguer.config
 
 import com.jfb.jottasburguer.security.JwtAuthenticationFilter
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -11,8 +13,9 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.access.AccessDeniedHandler
+import org.springframework.security.web.authentication.HttpStatusEntryPoint
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import org.slf4j.LoggerFactory
 
 @Configuration
 @EnableWebSecurity
@@ -30,15 +33,22 @@ class SecurityConfig(
             .sessionManagement {
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
+            .exceptionHandling { exceptions ->
+                exceptions
+                    .authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                    .accessDeniedHandler(AccessDeniedHandler { request, response, accessDeniedException ->
+                        response.sendError(HttpStatus.FORBIDDEN.value(), "Acesso negado")
+                    })
+            }
             .authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers("/api/auth/**").permitAll() // Endpoints públicos (login, registro, etc.)
-                    .requestMatchers("/api/customers").permitAll() // Cadastro de clientes é público
-                    .requestMatchers("/api/orders").permitAll() // Endpoint de pedidos é público (por enquanto)
-                    .requestMatchers("/api/users").hasRole("ADMIN") // Somente ADMIN pode criar usuários
-                    .requestMatchers("/api/products/**").authenticated() // Endpoints de produtos exigem autenticação
-                    .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Swagger
-                    .anyRequest().authenticated() // Todos os outros endpoints exigem autenticação
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/customers").permitAll()
+                    .requestMatchers("/api/orders").permitAll()
+                    .requestMatchers("/api/users").hasRole("ADMIN")
+                    .requestMatchers("/api/products/**").authenticated()
+                    .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                    .anyRequest().authenticated()
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()

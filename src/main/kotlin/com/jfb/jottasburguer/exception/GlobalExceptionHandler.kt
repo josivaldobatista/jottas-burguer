@@ -65,6 +65,22 @@ class ResourceExceptionHandler {
         return ResponseEntity.status(status).body(err)
     }
 
+    @ExceptionHandler(DuplicateEmailException::class)
+    fun handleDuplicateEmailException(
+        e: DuplicateEmailException,
+        request: HttpServletRequest
+    ): ResponseEntity<StandardError> {
+        val status = HttpStatus.CONFLICT
+        val err = StandardError(
+            timestamp = Instant.now(),
+            status = status.value(),
+            error = "Conflito de dados",
+            message = e.message ?: "O email fornecido já está em uso.",
+            path = request.requestURI
+        )
+        return ResponseEntity.status(status).body(err)
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationException(
         e: MethodArgumentNotValidException,

@@ -21,6 +21,12 @@ class CustomerServiceImpl(
     override fun createCustomer(request: CustomerRequest): CustomerResponse {
         logger.info("Creating customer with email: ${request.email}")
 
+        // Verifica se o email já está em uso
+        if (customerRepository.existsByEmail(request.email)) {
+            logger.error("Tentativa de cadastro com email duplicado: ${request.email}")
+            throw DuplicateEmailException("O email fornecido já está em uso.")
+        }
+
         val customer = Customer(
             name = request.name,
             email = request.email,
@@ -33,8 +39,8 @@ class CustomerServiceImpl(
             logger.info("Customer created successfully: ${savedCustomer.email}")
             return mapToCustomerResponse(savedCustomer)
         } catch (ex: DataIntegrityViolationException) {
-            logger.error("Duplicate email: ${request.email}")
-            throw DuplicateEmailException("Email already in use: ${request.email}")
+            logger.error("Erro ao salvar cliente: ${ex.message}", ex)
+            throw DuplicateEmailException("O email fornecido já está em uso.")
         }
     }
 
