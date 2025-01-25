@@ -4,6 +4,8 @@ import com.jfb.jottasburguer.exception.UserNotFoundException
 import com.jfb.jottasburguer.repository.UserRepository
 import com.jfb.jottasburguer.service.UserDetailsService
 import org.slf4j.LoggerFactory
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
@@ -37,12 +39,19 @@ class UserDetailsServiceImpl(
     }
 
     private fun buildUserDetails(user: com.jfb.jottasburguer.model.entity.User): UserDetails {
-        var user = User
+        // Converte as roles do usuário para GrantedAuthority
+        val authorities: List<GrantedAuthority> = user.roles.map { role ->
+            SimpleGrantedAuthority(role)
+        }
+
+        // Constrói o UserDetails
+        val userDetails = User
             .withUsername(user.email)
             .password(user.hashedPassword)
-            .authorities(user.authorities)
+            .authorities(authorities)
             .build()
-        logger.info("USER DETAILS: $user")
-        return user
+
+        logger.info("USER DETAILS construído: $userDetails")
+        return userDetails
     }
 }

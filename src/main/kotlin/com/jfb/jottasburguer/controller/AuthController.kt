@@ -22,7 +22,6 @@ class AuthController(
     fun login(@RequestBody request: LoginRequest): ResponseEntity<TokenResponse> {
         logger.info("Tentativa de login com email: ${request.email}")
         val tokenResponse = authService.login(request)
-        logger.info("Token gerado com sucesso para o usuário: ${request.email}")
         return ResponseEntity.ok(tokenResponse)
     }
 

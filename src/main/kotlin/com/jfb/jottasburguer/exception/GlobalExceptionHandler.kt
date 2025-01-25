@@ -114,7 +114,7 @@ class ResourceExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<StandardError> {
         val status = HttpStatus.UNAUTHORIZED
-        logger.error("Falha na autenticação: ${e.message}", e) // Log do stack trace
+        logger.error("Falha na autenticação: ${e.message}") // Log do stack trace
         val err = StandardError(
             timestamp = Instant.now(),
             status = status.value(),
