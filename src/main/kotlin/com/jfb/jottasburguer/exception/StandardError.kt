@@ -1,12 +1,11 @@
 package com.jfb.jottasburguer.exception
 
-import java.io.Serializable
 import java.time.Instant
 
-open class StandardError( // Adicione "open" aqui
-    var timestamp: Instant = Instant.now(),
-    var status: Int = 0,
-    var error: String = "",
-    var message: String? = "",
-    var path: String = ""
-) : Serializable
+open class StandardError(
+    open val timestamp: Instant = Instant.now(),
+    open val status: Int = 0,
+    open val error: String = "",
+    open val message: String? = null,
+    open val path: String = ""
+)

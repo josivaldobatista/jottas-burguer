@@ -71,7 +71,11 @@ class ResourceExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<ValidationError> {
         val status = HttpStatus.UNPROCESSABLE_ENTITY
-        logger.error("Erro de validação: ${e.message}", e) // Log do stack trace
+
+        // Log apenas da mensagem de erro, sem o stack trace
+        logger.error("Erro de validação: ${e.message}")
+
+        // Cria o objeto de erro de validação
         val err = ValidationError(
             timestamp = Instant.now(),
             status = status.value(),
@@ -80,6 +84,7 @@ class ResourceExceptionHandler {
             path = request.requestURI
         )
 
+        // Adiciona os erros de campo ao objeto de erro
         for (f in e.bindingResult.fieldErrors) {
             err.addError(f.field, f.defaultMessage ?: "Erro desconhecido no campo ${f.field}.")
         }
@@ -104,23 +109,23 @@ class ResourceExceptionHandler {
         return ResponseEntity.status(status).body(err)
     }
 
-    @ExceptionHandler(Exception::class)
-    fun handleGenericException(
-        e: Exception,
-        request: HttpServletRequest
-    ): ResponseEntity<StandardError> {
-        val status = HttpStatus.INTERNAL_SERVER_ERROR
-
-        // Log da exceção completa com stack trace
-        logger.error("Erro inesperado ao processar a requisição ${request.requestURI}: ${e.message}", e)
-
-        val err = StandardError(
-            timestamp = Instant.now(),
-            status = status.value(),
-            error = "Erro interno no servidor",
-            message = "Ocorreu um erro inesperado. Tente novamente mais tarde.",
-            path = request.requestURI
-        )
-        return ResponseEntity.status(status).body(err)
-    }
+//    @ExceptionHandler(Exception::class)
+//    fun handleGenericException(
+//        e: Exception,
+//        request: HttpServletRequest
+//    ): ResponseEntity<StandardError> {
+//        val status = HttpStatus.INTERNAL_SERVER_ERROR
+//
+//        // Log da exceção completa com stack trace
+//        logger.error("Erro inesperado ao processar a requisição ${request.requestURI}: ${e.message}", e)
+//
+//        val err = StandardError(
+//            timestamp = Instant.now(),
+//            status = status.value(),
+//            error = "Erro interno no servidor",
+//            message = "Ocorreu um erro inesperado. Tente novamente mais tarde.",
+//            path = request.requestURI
+//        )
+//        return ResponseEntity.status(status).body(err)
+//    }
 }
