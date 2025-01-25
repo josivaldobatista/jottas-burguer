@@ -1,6 +1,5 @@
 package com.jfb.jottasburguer.service.impl
 
-import com.jfb.jottasburguer.exception.FoodTypeNotFoundException
 import com.jfb.jottasburguer.exception.ResourceNotFoundException
 import com.jfb.jottasburguer.model.dto.ProductRequest
 import com.jfb.jottasburguer.model.dto.ProductResponse
@@ -24,7 +23,7 @@ class ProductServiceImpl(
 
         // Busca o FoodType pelo ID
         val foodType = foodTypeRepository.findById(request.foodTypeId)
-            .orElseThrow { FoodTypeNotFoundException("Food type not found with ID: ${request.foodTypeId}") }
+            .orElseThrow { ResourceNotFoundException("Food type not found with ID: ${request.foodTypeId}") }
 
         val product = Product(
             name = request.name,
@@ -61,7 +60,7 @@ class ProductServiceImpl(
 
         // Busca o novo FoodType pelo ID
         val foodType = foodTypeRepository.findById(request.foodTypeId)
-            .orElseThrow { FoodTypeNotFoundException("Food type not found with ID: ${request.foodTypeId}") }
+            .orElseThrow { ResourceNotFoundException("Food type not found with ID: ${request.foodTypeId}") }
 
         // Atualiza os campos do produto
         product.name = request.name

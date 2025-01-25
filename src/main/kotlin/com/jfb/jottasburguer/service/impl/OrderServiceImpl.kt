@@ -1,6 +1,5 @@
 package com.jfb.jottasburguer.service.impl
 
-import com.jfb.jottasburguer.exception.OrderNotFoundException
 import com.jfb.jottasburguer.exception.ResourceNotFoundException
 import com.jfb.jottasburguer.model.dto.OrderItemResponse
 import com.jfb.jottasburguer.model.dto.OrderRequest
@@ -71,7 +70,7 @@ class OrderServiceImpl(
     override fun findOrderById(id: Long): OrderResponse {
         logger.info("Fetching order by ID: $id")
         val order = orderRepository.findById(id)
-            .orElseThrow { OrderNotFoundException("Order not found with ID: $id") }
+            .orElseThrow { ResourceNotFoundException("Order not found with ID: $id") }
 
         val orderItems = orderItemRepository.findByOrderId(id)
         return mapToOrderResponse(order, orderItems)
@@ -80,7 +79,7 @@ class OrderServiceImpl(
     override fun updateOrderStatus(id: Long, status: String): OrderResponse {
         logger.info("Updating order status with ID: $id to $status")
         val order = orderRepository.findById(id)
-            .orElseThrow { OrderNotFoundException("Order not found with ID: $id") }
+            .orElseThrow { ResourceNotFoundException("Order not found with ID: $id") }
 
         order.status = status
         order.updatedAt = LocalDateTime.now()

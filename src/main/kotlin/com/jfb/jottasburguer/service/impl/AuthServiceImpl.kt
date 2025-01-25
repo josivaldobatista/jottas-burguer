@@ -1,4 +1,4 @@
-package com.jfb.jottasburguer.service
+package com.jfb.jottasburguer.service.impl
 
 import com.jfb.jottasburguer.exception.AuthenticationFailedException
 import com.jfb.jottasburguer.exception.InvalidTokenException
@@ -7,6 +7,7 @@ import com.jfb.jottasburguer.model.dto.LoginRequest
 import com.jfb.jottasburguer.model.dto.TokenResponse
 import com.jfb.jottasburguer.repository.UserRepository
 import com.jfb.jottasburguer.security.JwtService
+import com.jfb.jottasburguer.service.AuthService
 import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.AuthenticationManager
