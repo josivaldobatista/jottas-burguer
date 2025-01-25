@@ -1,16 +1,19 @@
 package com.jfb.jottasburguer.service.impl
 
-import com.jfb.jottasburguer.exception.CustomerNotFoundException
 import com.jfb.jottasburguer.exception.OrderNotFoundException
-import com.jfb.jottasburguer.exception.ProductNotFoundException
+import com.jfb.jottasburguer.exception.ResourceNotFoundException
 import com.jfb.jottasburguer.model.dto.OrderItemResponse
 import com.jfb.jottasburguer.model.dto.OrderRequest
 import com.jfb.jottasburguer.model.dto.OrderResponse
-import com.jfb.jottasburguer.model.entity.*
-import com.jfb.jottasburguer.repository.*
+import com.jfb.jottasburguer.model.entity.Order
+import com.jfb.jottasburguer.model.entity.OrderItem
+import com.jfb.jottasburguer.repository.CustomerRepository
+import com.jfb.jottasburguer.repository.OrderItemRepository
+import com.jfb.jottasburguer.repository.OrderRepository
+import com.jfb.jottasburguer.repository.ProductRepository
 import com.jfb.jottasburguer.service.OrderService
-import org.springframework.stereotype.Service
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
@@ -28,13 +31,13 @@ class OrderServiceImpl(
 
         // Busca o cliente
         val customer = customerRepository.findById(request.customerId)
-            .orElseThrow { CustomerNotFoundException("Customer not found with ID: ${request.customerId}") }
+            .orElseThrow { ResourceNotFoundException("Customer not found with ID: ${request.customerId}") }
 
         // Calcula o total e cria os itens do pedido
         var total = 0.0
         val orderItems = request.items.map { itemRequest ->
             val product = productRepository.findById(itemRequest.productId)
-                .orElseThrow { ProductNotFoundException("Product not found with ID: ${itemRequest.productId}") }
+                .orElseThrow { ResourceNotFoundException("Product not found with ID: ${itemRequest.productId}") }
 
             total += product.price * itemRequest.quantity
 

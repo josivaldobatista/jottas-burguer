@@ -1,15 +1,15 @@
 package com.jfb.jottasburguer.service.impl
 
 import com.jfb.jottasburguer.exception.DuplicateEmailException
-import com.jfb.jottasburguer.exception.CustomerNotFoundException
+import com.jfb.jottasburguer.exception.ResourceNotFoundException
 import com.jfb.jottasburguer.model.dto.CustomerRequest
 import com.jfb.jottasburguer.model.dto.CustomerResponse
 import com.jfb.jottasburguer.model.entity.Customer
 import com.jfb.jottasburguer.repository.CustomerRepository
 import com.jfb.jottasburguer.service.CustomerService
+import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
-import org.slf4j.LoggerFactory
 
 @Service
 class CustomerServiceImpl(
@@ -52,7 +52,7 @@ class CustomerServiceImpl(
     override fun findCustomerById(id: Long): CustomerResponse {
         logger.info("Fetching customer by ID: $id")
         val customer = customerRepository.findById(id)
-            .orElseThrow { CustomerNotFoundException("Customer not found with ID: $id") }
+            .orElseThrow { ResourceNotFoundException("Cliente não encontrado com o ID: $id") }
         return mapToCustomerResponse(customer)
     }
 
@@ -60,7 +60,7 @@ class CustomerServiceImpl(
         logger.info("Updating customer with ID: $id")
 
         val customer = customerRepository.findById(id)
-            .orElseThrow { CustomerNotFoundException("Customer not found with ID: $id") }
+            .orElseThrow { ResourceNotFoundException("Cliente não encontrado com o ID: $id") }
 
         customer.name = request.name
         customer.email = request.email
@@ -81,7 +81,7 @@ class CustomerServiceImpl(
         logger.info("Deleting customer with ID: $id")
 
         if (!customerRepository.existsById(id)) {
-            throw CustomerNotFoundException("Customer not found with ID: $id")
+            throw ResourceNotFoundException("Cliente não encontrado com o ID: $id")
         }
 
         customerRepository.deleteById(id)

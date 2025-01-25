@@ -1,15 +1,15 @@
 package com.jfb.jottasburguer.service.impl
 
 import com.jfb.jottasburguer.exception.FoodTypeNotFoundException
-import com.jfb.jottasburguer.exception.ProductNotFoundException
+import com.jfb.jottasburguer.exception.ResourceNotFoundException
 import com.jfb.jottasburguer.model.dto.ProductRequest
 import com.jfb.jottasburguer.model.dto.ProductResponse
 import com.jfb.jottasburguer.model.entity.Product
 import com.jfb.jottasburguer.repository.FoodTypeRepository
 import com.jfb.jottasburguer.repository.ProductRepository
 import com.jfb.jottasburguer.service.ProductService
-import org.springframework.stereotype.Service
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
 
 @Service
 class ProductServiceImpl(
@@ -48,7 +48,7 @@ class ProductServiceImpl(
     override fun findProductById(id: Long): ProductResponse {
         logger.info("Fetching product by ID: $id")
         val product = productRepository.findById(id)
-            .orElseThrow { ProductNotFoundException("Product not found with ID: $id") }
+            .orElseThrow { ResourceNotFoundException("Product not found with ID: $id") }
         return mapToProductResponse(product)
     }
 
@@ -57,7 +57,7 @@ class ProductServiceImpl(
 
         // Busca o produto existente
         val product = productRepository.findById(id)
-            .orElseThrow { ProductNotFoundException("Product not found with ID: $id") }
+            .orElseThrow { ResourceNotFoundException("Product not found with ID: $id") }
 
         // Busca o novo FoodType pelo ID
         val foodType = foodTypeRepository.findById(request.foodTypeId)
@@ -80,7 +80,7 @@ class ProductServiceImpl(
         logger.info("Deleting product with ID: $id")
 
         if (!productRepository.existsById(id)) {
-            throw ProductNotFoundException("Product not found with ID: $id")
+            throw ResourceNotFoundException("Product not found with ID: $id")
         }
 
         productRepository.deleteById(id)

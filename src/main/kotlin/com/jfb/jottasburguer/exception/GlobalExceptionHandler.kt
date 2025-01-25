@@ -32,23 +32,6 @@ class ResourceExceptionHandler {
         return ResponseEntity.status(status).body(err)
     }
 
-    @ExceptionHandler(ProductNotFoundException::class)
-    fun handleProductNotFoundException(
-        e: ProductNotFoundException,
-        request: HttpServletRequest
-    ): ResponseEntity<StandardError> {
-        val status = HttpStatus.NOT_FOUND
-        logger.error("Produto não encontrado: ${e.message}")
-        val err = StandardError(
-            timestamp = Instant.now(),
-            status = status.value(),
-            error = "Produto não encontrado",
-            message = e.message ?: "O produto solicitado não foi encontrado.",
-            path = request.requestURI
-        )
-        return ResponseEntity.status(status).body(err)
-    }
-
     @ExceptionHandler(DuplicateUserException::class)
     fun handleDuplicateUserException(
         e: DuplicateUserException,
