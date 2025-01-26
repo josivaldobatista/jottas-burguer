@@ -2,7 +2,7 @@ package com.jfb.jottasburguer.controller
 
 import com.jfb.jottasburguer.model.dto.LoginRequest
 import com.jfb.jottasburguer.model.dto.TokenResponse
-import com.jfb.jottasburguer.service.AuthServiceImpl
+import com.jfb.jottasburguer.service.AuthService
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/auth")
 class AuthController(
-    private val authService: AuthServiceImpl
+    private val authService: AuthService
 ) {
 
     private val logger = LoggerFactory.getLogger(AuthController::class.java)

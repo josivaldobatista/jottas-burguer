@@ -45,7 +45,7 @@ class SecurityConfig(
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/customers").permitAll()
                     .requestMatchers("/api/orders").permitAll()
-                    .requestMatchers("/api/users").hasRole("ADMIN")
+                    .requestMatchers("/api/users").hasAuthority("ADMIN")
                     .requestMatchers("/api/products/**").authenticated()
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .anyRequest().authenticated()
