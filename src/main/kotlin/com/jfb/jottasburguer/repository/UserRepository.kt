@@ -1,10 +1,10 @@
 package com.jfb.jottasburguer.repository
 
-import com.jfb.jottasburguer.model.entity.User
+import com.jfb.jottasburguer.model.entity.AppUser
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.Optional
 
-interface UserRepository : JpaRepository<User, Long> {
-    fun findByEmail(email: String): Optional<User>
+interface UserRepository : JpaRepository<AppUser, Long> {
+    fun findByEmail(email: String): Optional<AppUser>
     fun existsByEmail(email: String): Boolean
 }

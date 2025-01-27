@@ -28,25 +28,16 @@ final class JwtService(
      * Gera um token JWT para o usuário, incluindo suas roles (autoridades) como uma claim.
      */
     fun generateToken(userDetails: UserDetails, additionalClaims: Map<String, Any> = emptyMap()): String {
-        Assert.notNull(userDetails, "UserDetails não pode ser nulo")
-        logger.info("Gerando token para o usuário: ${userDetails.username}")
+        val roles = userDetails.authorities.map { it.authority } // Roles já incluem o prefixo ROLE_
+        val claims = mutableMapOf<String, Any>("roles" to roles)
+        claims.putAll(additionalClaims)
 
-        // Extrai as roles (autoridades) do UserDetails
-        val roles = userDetails.authorities.map { it.authority }
-
-        // Cria as claims do token, incluindo as roles
-        val claims = mutableMapOf<String, Any>(
-            "roles" to roles // Adiciona as roles como uma claim
-        )
-        claims.putAll(additionalClaims) // Adiciona claims adicionais, se houver
-
-        // Constrói o token JWT
         val token = Jwts.builder()
-            .subject(userDetails.username) // Define o subject (normalmente o email ou username)
-            .issuedAt(Date()) // Define a data de emissão
-            .expiration(Date(System.currentTimeMillis() + expiration)) // Define a data de expiração
-            .claims(claims) // Adiciona as claims (incluindo as roles)
-            .signWith(key, SIGNATURE_ALGORITHM) // Assina o token
+            .subject(userDetails.username)
+            .issuedAt(Date())
+            .expiration(Date(System.currentTimeMillis() + expiration))
+            .claims(claims)
+            .signWith(key, Jwts.SIG.HS256)
             .compact()
 
         logger.info("Token gerado: $token")

@@ -4,7 +4,7 @@ import com.jfb.jottasburguer.exception.DuplicateUserException
 import com.jfb.jottasburguer.exception.UserNotFoundException
 import com.jfb.jottasburguer.model.dto.UserRequest
 import com.jfb.jottasburguer.model.dto.UserResponse
-import com.jfb.jottasburguer.model.entity.User
+import com.jfb.jottasburguer.model.entity.AppUser
 import com.jfb.jottasburguer.repository.UserRepository
 import com.jfb.jottasburguer.service.UserService
 import org.springframework.dao.DataIntegrityViolationException
@@ -87,21 +87,21 @@ class UserServiceImpl(
         }
     }
 
-    private fun buildUserFromRequest(request: UserRequest): User {
-        return User(
+    private fun buildUserFromRequest(request: UserRequest): AppUser {
+        return AppUser(
             email = request.email,
             hashedPassword = passwordEncoder.encode(request.password),
             roles = request.roles
         )
     }
 
-    private fun updateUserFromRequest(user: User, request: UserRequest) {
+    private fun updateUserFromRequest(user: AppUser, request: UserRequest) {
         user.email = request.email
         user.hashedPassword = passwordEncoder.encode(request.password)
         user.roles = request.roles
     }
 
-    private fun mapToUserResponse(user: User): UserResponse {
+    private fun mapToUserResponse(user: AppUser): UserResponse {
         return UserResponse(user.id!!, user.email, user.roles)
     }
 

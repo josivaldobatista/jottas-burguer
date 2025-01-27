@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails
 
 @Entity
 @Table(name = "users")
-data class User(
+data class AppUser(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
@@ -27,7 +27,7 @@ data class User(
         return roles.map { SimpleGrantedAuthority("ROLE_$it") } // Adiciona o prefixo ROLE_
     }
 
-    override fun getPassword(): String = hashedPassword // Retorna a propriedade password
+    override fun getPassword(): String = hashedPassword
 
     override fun getUsername(): String = email
 
