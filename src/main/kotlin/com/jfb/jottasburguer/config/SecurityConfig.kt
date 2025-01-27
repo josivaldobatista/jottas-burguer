@@ -54,7 +54,7 @@ class SecurityConfig(
                 requests
                     .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll() // Permite acesso público a endpoints de autenticação
                     .requestMatchers(HttpMethod.GET, "/api/customers").permitAll() // Permite acesso público a listagem de clientes
-                    .requestMatchers(HttpMethod.POST, "/api/orders").permitAll() // Permite acesso público a criação de pedidos
+                    .requestMatchers("/api/orders/**").authenticated()
                     .requestMatchers("/api/users").authenticated()
                     .requestMatchers("/api/products/**").authenticated() // Exige autenticação para acessar endpoints de produtos
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Permite acesso ao Swagger

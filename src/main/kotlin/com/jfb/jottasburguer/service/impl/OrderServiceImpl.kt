@@ -69,11 +69,16 @@ class OrderServiceImpl(
 
     override fun findOrderById(id: Long): OrderResponse {
         logger.info("Fetching order by ID: $id")
-        val order = orderRepository.findById(id)
-            .orElseThrow { ResourceNotFoundException("Order not found with ID: $id") }
 
-        val orderItems = orderItemRepository.findByOrderId(id)
-        return mapToOrderResponse(order, orderItems)
+        // Busca o pedido
+        val orderResponse = orderRepository.findOrderById(id)
+            ?: throw ResourceNotFoundException("Order not found with ID: $id")
+
+        // Busca os itens do pedido
+        val orderItems = orderRepository.findOrderItemsByOrderId(id)
+
+        // Combina os resultados
+        return orderResponse.copy(items = orderItems)
     }
 
     override fun updateOrderStatus(id: Long, status: String): OrderResponse {
