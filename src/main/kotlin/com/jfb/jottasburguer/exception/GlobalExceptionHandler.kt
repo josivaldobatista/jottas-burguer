@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintViolationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.authorization.AuthorizationDeniedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -106,6 +107,23 @@ class ResourceExceptionHandler {
             err.addError(fieldName, errorMessage)
         }
 
+        return ResponseEntity.status(status).body(err)
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException::class)
+    fun handleAccessDeniedException(
+        e: AuthorizationDeniedException,
+        request: HttpServletRequest
+    ): ResponseEntity<StandardError> {
+        val status = HttpStatus.FORBIDDEN
+        logger.error("Acesso negado: ${e.message}")
+        val err = StandardError(
+            timestamp = Instant.now(),
+            status = status.value(),
+            error = "Acesso negado",
+            message = "Você não tem permissão para realizar esta ação.",
+            path = request.requestURI
+        )
         return ResponseEntity.status(status).body(err)
     }
 

@@ -7,11 +7,12 @@ import com.jfb.jottasburguer.model.dto.UserResponse
 import com.jfb.jottasburguer.model.entity.AppUser
 import com.jfb.jottasburguer.repository.UserRepository
 import com.jfb.jottasburguer.service.UserService
+import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
-import org.slf4j.LoggerFactory
 
 @Service
 class UserServiceImpl(
@@ -21,6 +22,7 @@ class UserServiceImpl(
 
     private val logger = LoggerFactory.getLogger(UserServiceImpl::class.java)
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     override fun createUser(request: UserRequest): UserResponse {
         logger.info("Criando usuário com email: ${request.email}")
 

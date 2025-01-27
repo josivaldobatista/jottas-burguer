@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -24,6 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter
 ) {
@@ -53,7 +55,7 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll() // Permite acesso público a endpoints de autenticação
                     .requestMatchers(HttpMethod.GET, "/api/customers").permitAll() // Permite acesso público a listagem de clientes
                     .requestMatchers(HttpMethod.POST, "/api/orders").permitAll() // Permite acesso público a criação de pedidos
-                    .requestMatchers("/api/users").hasAuthority("ADMIN") // Exige role ADMIN para acessar endpoints de usuários
+                    .requestMatchers("/api/users").authenticated()
                     .requestMatchers("/api/products/**").authenticated() // Exige autenticação para acessar endpoints de produtos
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Permite acesso ao Swagger
                     .anyRequest().authenticated() // Exige autenticação para qualquer outro endpoint
