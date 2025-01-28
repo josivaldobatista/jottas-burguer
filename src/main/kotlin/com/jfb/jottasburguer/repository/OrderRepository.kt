@@ -3,11 +3,15 @@ package com.jfb.jottasburguer.repository
 import com.jfb.jottasburguer.model.dto.OrderItemResponse
 import com.jfb.jottasburguer.model.dto.OrderResponse
 import com.jfb.jottasburguer.model.entity.Order
+import com.jfb.jottasburguer.model.entity.OrderItem
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
 interface OrderRepository : JpaRepository<Order, Long> {
+
+    @Query("SELECT oi FROM OrderItem oi LEFT JOIN FETCH oi.product WHERE oi.order.id = :orderId")
+    fun findByOrderId(orderId: Long): List<OrderItem>
 
     @Query(
         """

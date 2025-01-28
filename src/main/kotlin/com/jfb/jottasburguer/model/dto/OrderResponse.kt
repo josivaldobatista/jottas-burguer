@@ -6,9 +6,9 @@ data class OrderResponse(
     val id: Long,
     val customerId: Long,
     val total: Double,
-    val status: String,
+    var status: String,
     val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime,
+    var updatedAt: LocalDateTime,
     val items: List<OrderItemResponse> = emptyList()
 ) {
     constructor(

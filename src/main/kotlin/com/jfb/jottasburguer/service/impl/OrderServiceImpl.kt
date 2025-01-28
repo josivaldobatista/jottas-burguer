@@ -11,6 +11,7 @@ import com.jfb.jottasburguer.repository.OrderItemRepository
 import com.jfb.jottasburguer.repository.OrderRepository
 import com.jfb.jottasburguer.repository.ProductRepository
 import com.jfb.jottasburguer.service.OrderService
+import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -81,6 +82,7 @@ class OrderServiceImpl(
         return orderResponse.copy(items = orderItems)
     }
 
+    @Transactional
     override fun updateOrderStatus(id: Long, status: String): OrderResponse {
         logger.info("Updating order status with ID: $id to $status")
         val order = orderRepository.findById(id)
@@ -90,7 +92,7 @@ class OrderServiceImpl(
         order.updatedAt = LocalDateTime.now()
 
         val updatedOrder = orderRepository.save(order)
-        val orderItems = orderItemRepository.findByOrderId(id)
+        val orderItems = orderItemRepository.findByOrderIdTest(id)
         return mapToOrderResponse(updatedOrder, orderItems)
     }
 
