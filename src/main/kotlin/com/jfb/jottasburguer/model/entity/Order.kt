@@ -11,13 +11,13 @@ data class Order(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
-    var customer: Customer? = null, // Agora é opcional
+    var customer: Customer? = null,
 
     @Column(nullable = false)
-    var total: Double = 0.0, // Valor padrão
+    var total: Double = 0.0,
 
     @Column(nullable = false)
-    var status: String = "RECEIVED",
+    var status: String = OrderStatus.RECEIVED.name,
 
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
@@ -25,6 +25,9 @@ data class Order(
     @Column(nullable = false)
     var updatedAt: LocalDateTime = LocalDateTime.now()
 ) {
-    // Construtor secundário para uso interno
     constructor() : this(customer = null, total = 0.0)
+}
+
+enum class OrderStatus {
+    RECEIVED, PROCESSING, COMPLETED, CANCELLED
 }

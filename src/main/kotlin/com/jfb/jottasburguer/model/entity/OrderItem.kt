@@ -10,7 +10,7 @@ data class OrderItem(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
-    var order: Order? = null, // Agora é opcional
+    var order: Order? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
@@ -22,7 +22,6 @@ data class OrderItem(
     @Column(nullable = false)
     val price: Double
 ) {
-    // Construtor secundário para uso interno
     constructor(product: Product, quantity: Int, price: Double) : this(
         product = product,
         quantity = quantity,

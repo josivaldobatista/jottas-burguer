@@ -1,11 +1,13 @@
 package com.jfb.jottasburguer.service.impl
 
 import com.jfb.jottasburguer.exception.ResourceNotFoundException
+import com.jfb.jottasburguer.model.dto.OrderItemRequest
 import com.jfb.jottasburguer.model.dto.OrderItemResponse
 import com.jfb.jottasburguer.model.dto.OrderRequest
 import com.jfb.jottasburguer.model.dto.OrderResponse
 import com.jfb.jottasburguer.model.entity.Order
 import com.jfb.jottasburguer.model.entity.OrderItem
+import com.jfb.jottasburguer.model.entity.OrderStatus
 import com.jfb.jottasburguer.repository.CustomerRepository
 import com.jfb.jottasburguer.repository.OrderItemRepository
 import com.jfb.jottasburguer.repository.OrderRepository
@@ -24,18 +26,32 @@ class OrderServiceImpl(
     private val productRepository: ProductRepository
 ) : OrderService {
 
-    private val logger = LoggerFactory.getLogger(CustomerServiceImpl::class.java)
+    private val logger = LoggerFactory.getLogger(OrderServiceImpl::class.java)
 
     override fun createOrder(request: OrderRequest): OrderResponse {
         logger.info("Creating order for customer ID: ${request.customerId}")
 
-        // Busca o cliente
         val customer = customerRepository.findById(request.customerId)
             .orElseThrow { ResourceNotFoundException("Customer not found with ID: ${request.customerId}") }
 
-        // Calcula o total e cria os itens do pedido
+        val (total, orderItems) = calculateTotalAndCreateOrderItems(request.items)
+
+        val order = Order(
+            customer = customer,
+            total = total,
+            status = OrderStatus.RECEIVED.name
+        )
+
+        val savedOrder = orderRepository.save(order)
+        val savedOrderItems = saveOrderItems(orderItems, savedOrder)
+
+        logger.info("Order created successfully with ID: ${savedOrder.id}")
+        return mapToOrderResponse(savedOrder, savedOrderItems)
+    }
+
+    private fun calculateTotalAndCreateOrderItems(items: List<OrderItemRequest>): Pair<Double, List<OrderItem>> {
         var total = 0.0
-        val orderItems = request.items.map { itemRequest ->
+        val orderItems = items.map { itemRequest ->
             val product = productRepository.findById(itemRequest.productId)
                 .orElseThrow { ResourceNotFoundException("Product not found with ID: ${itemRequest.productId}") }
 
@@ -47,38 +63,24 @@ class OrderServiceImpl(
                 price = product.price
             )
         }
+        return total to orderItems
+    }
 
-        // Cria o pedido
-        val order = Order(
-            customer = customer,
-            total = total,
-            status = "RECEIVED"
-        )
-
-        // Salva o pedido no banco de dados
-        val savedOrder = orderRepository.save(order)
-
-        // Associa o pedido salvo aos itens e salva os itens
-        val savedOrderItems = orderItems.map { orderItem ->
-            orderItem.order = savedOrder // Associa o pedido ao item
-            orderItemRepository.save(orderItem) // Salva o item no banco de dados
+    private fun saveOrderItems(orderItems: List<OrderItem>, savedOrder: Order): List<OrderItem> {
+        return orderItems.map { orderItem ->
+            orderItem.order = savedOrder
+            orderItemRepository.save(orderItem)
         }
-
-        logger.info("Order created successfully with ID: ${savedOrder.id}")
-        return mapToOrderResponse(savedOrder, savedOrderItems)
     }
 
     override fun findOrderById(id: Long): OrderResponse {
         logger.info("Fetching order by ID: $id")
 
-        // Busca o pedido
         val orderResponse = orderRepository.findOrderById(id)
             ?: throw ResourceNotFoundException("Order not found with ID: $id")
 
-        // Busca os itens do pedido
         val orderItems = orderRepository.findOrderItemsByOrderId(id)
 
-        // Combina os resultados
         return orderResponse.copy(items = orderItems)
     }
 
@@ -113,5 +115,9 @@ class OrderServiceImpl(
                 )
             }
         )
+    }
+
+    companion object {
+        private const val DEFAULT_ORDER_STATUS = "RECEIVED"
     }
 }
