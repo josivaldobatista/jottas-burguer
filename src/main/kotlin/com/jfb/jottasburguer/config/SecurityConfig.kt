@@ -35,40 +35,50 @@ class SecurityConfig(
     @Value("\${app.security.allowed-origins}")
     private lateinit var allowedOrigins: Array<String>
 
+    companion object {
+        private val PUBLIC_ENDPOINTS = arrayOf(
+            "/api/auth/**",
+            "/api/customers"
+        )
+
+        private val SWAGGER_ENDPOINTS = arrayOf(
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/api-docs/**",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/api-docs/swagger-config"
+        )
+
+        private val AUTHENTICATED_ENDPOINTS = arrayOf(
+            "/api/orders/**",
+            "/api/users",
+            "/api/products/**"
+        )
+    }
+
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         logger.info("Configurando SecurityFilterChain...")
 
         http
-            .csrf { it.disable() } // Desabilita CSRF (não necessário para APIs stateless)
-            .cors { it.configurationSource(corsConfigurationSource()) } // Configura CORS
+            .csrf { it.disable() }
             .sessionManagement {
-                it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Sessão stateless
+                it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
-            .exceptionHandling { exceptions ->
-                exceptions
-                    .authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)) // Tratamento de autenticação falha
-                    .accessDeniedHandler(customAccessDeniedHandler()) // Tratamento de acesso negado
+            .exceptionHandling {
+                it.authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                    .accessDeniedHandler(customAccessDeniedHandler())
             }
-            .authorizeHttpRequests { requests ->
-                requests
-                    .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll() // Permite acesso público a endpoints de autenticação
-                    .requestMatchers(HttpMethod.GET, "/api/customers").permitAll() // Permite acesso público a listagem de clientes
-                    .requestMatchers("/api/orders/**").authenticated()
-                    .requestMatchers("/api/users").authenticated()
-                    .requestMatchers("/api/products/**").authenticated() // Exige autenticação para acessar endpoints de produtos
-                    .requestMatchers(
-                        HttpMethod.GET,
-                        "/swagger-ui.html",
-                        "/swagger-ui/**",
-                        "/api-docs/**",
-                        "/swagger-resources/**",
-                        "/webjars/**",
-                        "/api-docs/swagger-config"
-                    ).permitAll() // Permite acesso ao Swagger e seus recursos
-                    .anyRequest().authenticated() // Exige autenticação para qualquer outro endpoint
+            .cors { it.configurationSource(corsConfigurationSource()) }
+            .authorizeHttpRequests { auth ->
+                auth
+                    .requestMatchers(*PUBLIC_ENDPOINTS).permitAll()
+                    .requestMatchers(*SWAGGER_ENDPOINTS).permitAll() // Exige autenticação para o Swagger
+                    .requestMatchers(*AUTHENTICATED_ENDPOINTS).authenticated() // Exige autenticação para APIs protegidas
+                    .anyRequest().authenticated()
             }
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java) // Adiciona o filtro JWT
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }
@@ -88,14 +98,15 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         logger.info("Configurando CORS...")
-        val configuration = CorsConfiguration()
-        configuration.allowedOrigins = allowedOrigins.toList() // Origens permitidas
-        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS") // Métodos permitidos
-        configuration.allowedHeaders = listOf("*") // Headers permitidos
-        configuration.allowCredentials = true // Permite credenciais (cookies, headers de autenticação)
+        val configuration = CorsConfiguration().apply {
+            allowedOrigins = this@SecurityConfig.allowedOrigins.toList()
+            allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            allowedHeaders = listOf("*")
+            allowCredentials = true
+        }
 
         val source = UrlBasedCorsConfigurationSource()
-        source.registerCorsConfiguration("/**", configuration) // Aplica a configuração a todos os endpoints
+        source.registerCorsConfiguration("/**", configuration)
         return source
     }
 
