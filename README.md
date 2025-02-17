@@ -70,4 +70,5 @@ docker-compose up -d
 ### **Acesse a API**
 A API estará disponível em http://localhost:8080.
 
-Acesse a documentação da API (Swagger UI) em: http://localhost:8080/swagger-ui.html
+Acesse a documentação da API (Swagger UI) em: http://localhost:8080/swagger-ui/index.html
+Acesse a documentação da API api-docs em: http://localhost:8080/api-docs

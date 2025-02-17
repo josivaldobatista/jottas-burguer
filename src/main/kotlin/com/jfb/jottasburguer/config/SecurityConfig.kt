@@ -57,7 +57,15 @@ class SecurityConfig(
                     .requestMatchers("/api/orders/**").authenticated()
                     .requestMatchers("/api/users").authenticated()
                     .requestMatchers("/api/products/**").authenticated() // Exige autenticação para acessar endpoints de produtos
-                    .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Permite acesso ao Swagger
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/api-docs/**",
+                        "/swagger-resources/**",
+                        "/webjars/**",
+                        "/api-docs/swagger-config"
+                    ).permitAll() // Permite acesso ao Swagger e seus recursos
                     .anyRequest().authenticated() // Exige autenticação para qualquer outro endpoint
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java) // Adiciona o filtro JWT
