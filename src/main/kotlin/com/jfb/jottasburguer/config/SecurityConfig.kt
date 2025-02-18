@@ -1,14 +1,13 @@
 package com.jfb.jottasburguer.config
 
 import com.jfb.jottasburguer.security.JwtAuthenticationFilter
-import org.slf4j.LoggerFactory
+import com.jfb.jottasburguer.service.UserDetailsService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -27,13 +26,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableWebSecurity
 @EnableMethodSecurity
 class SecurityConfig(
-    private val jwtAuthenticationFilter: JwtAuthenticationFilter
+    private val jwtAuthenticationFilter: JwtAuthenticationFilter,
+    @Value("\${spring.profiles.active}") private val activeProfile: String,
+    private val userDetailsService: UserDetailsService
 ) {
-
-    private val logger = LoggerFactory.getLogger(SecurityConfig::class.java)
-
-    @Value("\${app.security.allowed-origins}")
-    private lateinit var allowedOrigins: Array<String>
 
     companion object {
         private val PUBLIC_ENDPOINTS = arrayOf(
@@ -59,8 +55,6 @@ class SecurityConfig(
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
-        logger.info("Configurando SecurityFilterChain...")
-
         http
             .csrf { it.disable() }
             .sessionManagement {
@@ -74,8 +68,17 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(*PUBLIC_ENDPOINTS).permitAll()
-                    .requestMatchers(*SWAGGER_ENDPOINTS).permitAll() // Exige autenticação para o Swagger
-                    .requestMatchers(*AUTHENTICATED_ENDPOINTS).authenticated() // Exige autenticação para APIs protegidas
+                    .requestMatchers(*AUTHENTICATED_ENDPOINTS).authenticated()
+
+                    // Configuração para o Swagger
+                    .apply {
+                        if (activeProfile == "local") {
+                            auth.requestMatchers(*SWAGGER_ENDPOINTS).permitAll()
+                        } else {
+                            auth.requestMatchers(*SWAGGER_ENDPOINTS).hasAuthority("ADMIN")
+                        }
+                    }
+
                     .anyRequest().authenticated()
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
@@ -84,22 +87,21 @@ class SecurityConfig(
     }
 
     @Bean
+    fun authenticationManager(http: HttpSecurity): AuthenticationManager {
+        val authManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder::class.java)
+        authManagerBuilder.userDetailsService(userDetailsService)
+        return authManagerBuilder.build()
+    }
+
+    @Bean
     fun passwordEncoder(): PasswordEncoder {
-        logger.info("Configurando BCryptPasswordEncoder...")
         return BCryptPasswordEncoder()
     }
 
     @Bean
-    fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
-        logger.info("Configurando AuthenticationManager...")
-        return authenticationConfiguration.authenticationManager
-    }
-
-    @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
-        logger.info("Configurando CORS...")
         val configuration = CorsConfiguration().apply {
-            allowedOrigins = this@SecurityConfig.allowedOrigins.toList()
+            allowedOrigins = listOf("http://localhost:3000", "http://localhost:8080")
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
             allowedHeaders = listOf("*")
             allowCredentials = true
@@ -113,7 +115,6 @@ class SecurityConfig(
     @Bean
     fun customAccessDeniedHandler(): AccessDeniedHandler {
         return AccessDeniedHandler { request, response, accessDeniedException ->
-            logger.warn("Acesso negado para o endpoint: ${request.requestURI}", accessDeniedException)
             response.sendError(HttpStatus.FORBIDDEN.value(), "Acesso negado: Você não tem permissão para acessar este recurso.")
         }
     }
